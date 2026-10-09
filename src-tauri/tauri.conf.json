@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "EchoTransfer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.tsvetomirgt.echotransfer",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -34,6 +34,15 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "signingIdentity": "-"
+    },
+    "license": "GPL-3.0-or-later",
+    "copyright": "Copyright (C) 2026 Tsvetomir Tsvetkov. Licensed under GPL-3.0-or-later.",
+    "homepage": "https://github.com/TsvetomirGT/echotransfer",
+    "publisher": "Tsvetomir Tsvetkov",
+    "category": "Music",
+    "shortDescription": "Sync Navidrome music to a Snowsky Echo SD card"
   }
 }

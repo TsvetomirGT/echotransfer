@@ -1,7 +1,7 @@
 {
   "name": "echotransfer",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.1.1",
+  "description": "Sync Navidrome music to a Snowsky Echo SD card",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
@@ -12,7 +12,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "tauri": "tauri"
   },
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
+  "repository": "github:TsvetomirGT/echotransfer",
   "dependencies": {
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2"

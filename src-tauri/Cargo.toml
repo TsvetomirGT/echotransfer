@@ -1,8 +1,10 @@
 [package]
 name = "echotransfer"
-version = "0.1.0"
+version = "0.1.1"
 description = "Sync Navidrome to Snowsky Echo SD cards"
-authors = ["tsvetomirgt"]
+authors = ["Tsvetomir Tsvetkov <tsvetomirgt@proton.me>"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/TsvetomirGT/echotransfer"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

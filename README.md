@@ -42,11 +42,12 @@ The app isn't code-signed yet, so your system will warn you the first time you o
 **macOS**
 
 1. Open the `.dmg` and drag **EchoTransfer** into **Applications**.
-2. Open it. If macOS says the app "can't be opened" or "is damaged", open **Terminal** and run:
+2. Open it. macOS will say it can't verify the developer. Click **Done**, then go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**. You only need to do this once.
+3. If macOS instead says the app "is damaged and can't be opened" (version 0.1.0 had this problem), open **Terminal** and run:
    ```sh
    xattr -cr /Applications/EchoTransfer.app
    ```
-   Then open the app again. Alternatively, go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**.
+   Then open the app again.
 
 **Windows**
 
@@ -230,3 +231,15 @@ ECHO_E2E_URL=http://127.0.0.1:4533 ECHO_E2E_USER=admin ECHO_E2E_PASS=secret \
 3. The **Release** workflow runs the tests, builds installers for macOS (Apple Silicon and Intel), Windows and Linux, and attaches them to a draft release. Review the draft on GitHub and publish it.
 
 The workflow can also be started by hand from the **Actions** tab.
+
+## License
+
+Copyright (C) 2026 Tsvetomir Tsvetkov
+
+EchoTransfer is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+EchoTransfer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with EchoTransfer. See [LICENSE](LICENSE), or <https://www.gnu.org/licenses/>.
+
+EchoTransfer uses third-party libraries under their own permissive licenses (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0 and others), all compatible with the GPL.
