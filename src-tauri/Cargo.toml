@@ -1,6 +1,6 @@
 [package]
 name = "echotransfer"
-version = "0.2.0"
+version = "0.2.1"
 description = "Sync Navidrome to Snowsky Echo SD cards"
 authors = ["Tsvetomir Tsvetkov <tsvetomirgt@proton.me>"]
 license = "GPL-3.0-or-later"

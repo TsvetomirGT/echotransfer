@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### New
+
+- **`{group}` folder layout field.** Puts a track's grouping tag in the folder layout, for example `Music/{albumartist}/[{group}/]{album}/…`. The new Settings option **Use TIT1 / Work tag as {group}** covers libraries that keep their grouping in `TIT1`, which Navidrome reads as the *work*.
+
 ## 0.2.0
 
 ### New

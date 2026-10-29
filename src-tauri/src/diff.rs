@@ -117,7 +117,7 @@ pub fn desired_tracks(
         let multi_disc = songs.iter().any(|s| s.disc_number.unwrap_or(1) > 1);
         let album_artist = lib.albums.get(album_id).and_then(|a| a.artist.as_deref());
         for song in songs {
-            let fields = TrackFields::from_song(song, album_artist, multi_disc);
+            let fields = TrackFields::from_song(song, album_artist, multi_disc, settings.work_as_group);
             let ext = match settings.profile.transcode() {
                 Some((fmt, _)) => fmt.to_string(),
                 None if song.suffix.is_empty() => "mp3".into(),

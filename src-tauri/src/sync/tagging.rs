@@ -122,6 +122,7 @@ mod tests {
             album: "Album".into(),
             title: "Title".into(),
             genre: "Jazz".into(),
+            group: String::new(),
             year: Some(2001),
             track: Some(3),
             disc: Some(2),

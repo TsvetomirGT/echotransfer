@@ -121,4 +121,16 @@ pub struct Song {
     pub duration: u64,
     #[serde(default)]
     pub bit_rate: Option<u32>,
+    /// OpenSubsonic: GRP1 / GROUPING tag values.
+    #[serde(default)]
+    pub groupings: Vec<String>,
+    /// OpenSubsonic: Navidrome maps TIT1 here, not to groupings.
+    #[serde(default)]
+    pub works: Vec<Work>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Work {
+    #[serde(default)]
+    pub name: String,
 }

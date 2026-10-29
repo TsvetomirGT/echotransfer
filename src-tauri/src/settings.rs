@@ -68,6 +68,8 @@ pub struct Settings {
     pub concurrency: usize,
     pub path_template: String,
     pub clean_apple_double: bool,
+    /// Fill {group} from the work tag (TIT1) when there is no grouping tag.
+    pub work_as_group: bool,
 }
 
 impl Default for Settings {
@@ -81,6 +83,7 @@ impl Default for Settings {
             concurrency: 4,
             path_template: DEFAULT_TEMPLATE.into(),
             clean_apple_double: true,
+            work_as_group: false,
         }
     }
 }

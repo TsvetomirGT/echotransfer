@@ -20,6 +20,7 @@ export interface Settings {
   concurrency: number;
   pathTemplate: string;
   cleanAppleDouble: boolean;
+  workAsGroup: boolean;
 }
 
 export interface Volume {

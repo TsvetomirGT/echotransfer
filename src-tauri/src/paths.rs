@@ -2,8 +2,9 @@
 //!
 //! Template syntax: `{field}` or `{field:02}` (zero-padded number). Text in
 //! `[...]` is dropped entirely if any field inside it is empty.
-//! Fields: albumartist, artist, album, title, year, track, disc, genre.
-//! `disc` is only set for multi-disc albums. The extension is appended.
+//! Fields: albumartist, artist, album, title, year, track, disc, genre, group.
+//! `disc` is only set for multi-disc albums. `group` is the grouping tag,
+//! optionally falling back to the work (TIT1). The extension is appended.
 
 use unicode_normalization::UnicodeNormalization;
 
@@ -18,13 +19,14 @@ pub struct TrackFields {
     pub album: String,
     pub title: String,
     pub genre: String,
+    pub group: String,
     pub year: Option<u32>,
     pub track: Option<u32>,
     pub disc: Option<u32>,
 }
 
 impl TrackFields {
-    pub fn from_song(song: &Song, album_artist: Option<&str>, multi_disc: bool) -> Self {
+    pub fn from_song(song: &Song, album_artist: Option<&str>, multi_disc: bool, work_as_group: bool) -> Self {
         let artist = song.artist.clone().filter(|s| !s.is_empty());
         let albumartist = album_artist
             .map(str::to_string)
@@ -38,6 +40,7 @@ impl TrackFields {
             album: song.album.clone().filter(|s| !s.is_empty()).unwrap_or_else(|| "Unknown Album".into()),
             title: if song.title.is_empty() { song.id.clone() } else { song.title.clone() },
             genre: song.genre.clone().unwrap_or_default(),
+            group: group(song, work_as_group),
             year: song.year.filter(|y| *y > 0),
             track: song.track.filter(|t| *t > 0),
             disc: if multi_disc { song.disc_number.filter(|d| *d > 0) } else { None },
@@ -53,12 +56,24 @@ impl TrackFields {
             "album" => text(&self.album),
             "title" => text(&self.title),
             "genre" => text(&self.genre),
+            "group" => text(&self.group),
             "year" => num(self.year),
             "track" => num(self.track),
             "disc" => num(self.disc),
             _ => None,
         }
     }
+}
+
+fn group(song: &Song, work_as_group: bool) -> String {
+    let works = song.works.iter().map(|w| &w.name).filter(|_| work_as_group);
+    song.groupings
+        .iter()
+        .chain(works)
+        .map(|s| s.trim())
+        .find(|s| !s.is_empty())
+        .unwrap_or_default()
+        .to_string()
 }
 
 /// Renders a relative path (forward slashes) for a track.
@@ -188,6 +203,7 @@ mod tests {
             album: "OK Computer".into(),
             title: "Paranoid Android".into(),
             genre: "Rock".into(),
+            group: String::new(),
             year: Some(1997),
             track: Some(2),
             disc: None,
@@ -252,5 +268,21 @@ mod tests {
     fn nfc_normalized() {
         let decomposed = "Beyonce\u{0301}";
         assert_eq!(sanitize_component(decomposed, 120), "Beyonc\u{e9}");
+    }
+
+    #[test]
+    fn group_field() {
+        use crate::subsonic::models::Work;
+        let mut f = fields();
+        f.group = "Live".into();
+        assert_eq!(render("{albumartist}/[{group}/]{title}", &f, "mp3"), "Radiohead/Live/Paranoid Android.mp3");
+        f.group.clear();
+        assert_eq!(render("{albumartist}/[{group}/]{title}", &f, "mp3"), "Radiohead/Paranoid Android.mp3");
+
+        let song = Song { works: vec![Work { name: "Symphony No. 5".into() }], ..Song::default() };
+        assert_eq!(group(&song, false), "");
+        assert_eq!(group(&song, true), "Symphony No. 5");
+        let song = Song { groupings: vec![" Live ".into()], ..song };
+        assert_eq!(group(&song, true), "Live");
     }
 }

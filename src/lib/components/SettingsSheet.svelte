@@ -13,7 +13,7 @@
   const preview = $derived.by(() => {
     const sample: Record<string, string> = {
       albumartist: "Radiohead", artist: "Radiohead", album: "OK Computer", title: "Paranoid Android",
-      year: "1997", track: "2", disc: "", genre: "Rock",
+      year: "1997", track: "2", disc: "", genre: "Rock", group: "Live",
     };
     const fill = (s: string, strict: boolean) =>
       s.replace(/\{(\w+)(?::(\d+))?\}/g, (_, k: string, pad?: string) => {
@@ -88,12 +88,20 @@
     <input class="field mono" bind:value={draft.pathTemplate} spellcheck="false" />
     <small class="preview">{preview}</small>
     <small>
-      Fields: {"{albumartist} {artist} {album} {title} {year} {track} {disc} {genre}"}. Parts in [brackets] are left out when a field is empty.
+      Fields: {"{albumartist} {artist} {album} {title} {year} {track} {disc} {genre} {group}"}. Parts in [brackets] are left out when a field is empty.
       {#if draft.pathTemplate !== defaultTemplate}
         <button class="link" onclick={() => (draft.pathTemplate = defaultTemplate)}>Reset</button>
       {/if}
     </small>
   </label>
+
+  <label class="check">
+    <input type="checkbox" bind:checked={draft.workAsGroup} />
+    <span>Use TIT1 / Work tag as {"{group}"}</span>
+  </label>
+  <small class="under">
+    {"{group}"} comes from the grouping tag (GRP1). Navidrome reads TIT1 as the work instead; turn this on to use it when a track has no grouping.
+  </small>
 
   <label class="check">
     <input type="checkbox" bind:checked={draft.cleanAppleDouble} />
@@ -150,6 +158,7 @@
   .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
   .check { flex-direction: row; align-items: center; gap: 8px; }
   .check span { font-weight: 400; }
+  .under { margin: -10px 0 0 24px; }
   .link { border: 0; background: none; color: var(--focus); padding: 0; font-size: inherit; }
   .error { color: var(--removed); margin: 0; }
   .version { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }

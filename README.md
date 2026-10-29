@@ -116,6 +116,7 @@ Open **Settings** with the gear button at the top right.
 | **Embedded cover size** | The size of the cover image put into each track. **500 px** works well on the Echo. Try **300 px** if covers don't appear on your player. |
 | **Parallel downloads** | How many tracks are downloaded at the same time (default 4). Raise it on a fast connection. Lower it if your server struggles. |
 | **Folder layout** | Where tracks go on the card. See below. |
+| **Use TIT1 / Work tag as {group}** | `{group}` normally comes from the grouping tag (`GRP1`). Navidrome stores `TIT1` as the *work* instead, so turn this on if your grouping is in `TIT1`. It's only used for tracks without a grouping tag. |
 | **Delete macOS "._" files after syncing** | macOS sometimes leaves hidden `._` files on memory cards, which the player can list as broken tracks. Leave this on. |
 | **Check for updates** | Shows your version and checks GitHub for a newer one. |
 | **Sign out** | Disconnects and removes the saved password. |
@@ -135,7 +136,8 @@ Music/Radiohead/1997 - OK Computer/02 Paranoid Android.flac
 Music/Pink Floyd/1979 - The Wall/2-01 Hey You.flac      (multi-disc album)
 ```
 
-- Available fields: `{albumartist}` `{artist}` `{album}` `{title}` `{year}` `{track}` `{disc}` `{genre}`.
+- Available fields: `{albumartist}` `{artist}` `{album}` `{title}` `{year}` `{track}` `{disc}` `{genre}` `{group}`.
+- `{group}` is the track's grouping tag (`GRP1`, or `TIT1` with the setting above). Wrap it in brackets, like `[{group}/]`, so tracks without a group stay in the normal folder.
 - `{track:02}` pads the number with zeros (`2` becomes `02`).
 - Text inside `[square brackets]` is left out when a field in it is empty. For example, an album without a year gets no `" - "` prefix. `{disc}` is only filled in for albums with more than one disc.
 - The file extension is added automatically.
