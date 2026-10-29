@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { api, errorText, type Settings } from "$lib/api";
+  import { api, errorText, type Profile, type Settings } from "$lib/api";
   import { app } from "$lib/state.svelte";
+  import { updater } from "$lib/updater.svelte";
 
   let { onclose }: { onclose: () => void } = $props();
 
@@ -29,7 +30,8 @@
 
   async function save() {
     try {
-      app.settings = await api.saveSettings(draft);
+      const profile: Profile = draft.profile === "original" ? "original" : (`mp3-${draft.mp3Bitrate}` as Profile);
+      app.settings = await api.saveSettings({ ...draft, profile });
       app.scheduleDiff(0);
       onclose();
     } catch (e) {
@@ -54,14 +56,16 @@
   <h2 id="settings-title">Settings</h2>
 
   <label>
-    <span>Audio format on card</span>
-    <select class="field" bind:value={draft.profile}>
-      <option value="original">Original files (FLAC, MP3, …)</option>
-      <option value="mp3-320">MP3 320 kbps, converted by server</option>
-      <option value="mp3-256">MP3 256 kbps, converted by server</option>
-      <option value="mp3-192">MP3 192 kbps, converted by server</option>
+    <span>MP3 quality</span>
+    <select class="field" bind:value={draft.mp3Bitrate}>
+      <option value={320}>320 kbps</option>
+      <option value={256}>256 kbps</option>
+      <option value={192}>192 kbps</option>
     </select>
-    <small>Converting saves space. Changing this re-copies every track.</small>
+    <small>
+      Used when the format in the toolbar is MP3. Your Navidrome server does the conversion.
+      Changing this while MP3 is on re-copies every track.
+    </small>
   </label>
 
   <label>
@@ -96,6 +100,27 @@
     <span>Delete macOS “._” files after syncing</span>
   </label>
 
+  <div class="version">
+    <span>
+      EchoTransfer {updater.current}
+      <small>
+        {#if updater.status === "checking"}Checking for updates…
+        {:else if updater.status === "uptodate"}You have the latest version.
+        {:else if updater.status === "downloading"}Downloading update…
+        {:else if updater.status === "error"}<span class="error">Couldn't check for updates: {updater.error}</span>
+        {:else if updater.available}Version {updater.available.version} is available.
+        {/if}
+      </small>
+    </span>
+    {#if updater.available && updater.status !== "error"}
+      <button class="secondary" disabled={app.syncing || updater.status === "downloading"} onclick={() => updater.install()}>
+        {updater.canSelfUpdate ? `Update to ${updater.available.version}` : "Download"}
+      </button>
+    {:else}
+      <button class="secondary" disabled={updater.status === "checking"} onclick={() => updater.check()}>Check for updates</button>
+    {/if}
+  </div>
+
   {#if error}<p class="error">{error}</p>{/if}
 
   <div class="foot">
@@ -127,6 +152,9 @@
   .check span { font-weight: 400; }
   .link { border: 0; background: none; color: var(--focus); padding: 0; font-size: inherit; }
   .error { color: var(--removed); margin: 0; }
+  .version { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .version > span { flex: 1; display: flex; flex-direction: column; gap: 2px; font-weight: 550; }
+  .version small { font-weight: 400; }
   .foot { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
   .foot span { flex: 1; }
   .danger:hover { color: var(--removed); }

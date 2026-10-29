@@ -86,6 +86,18 @@
         {/each}
       </select>
     </label>
+    <label class="card format" title="Converting saves space. Changing this re-copies every track.">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.5V3l7-1.5v9.5M6 12.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM13 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" /></svg>
+      <select
+        aria-label="Audio format"
+        disabled={app.syncing}
+        value={app.settings?.profile === "original" ? "original" : "mp3"}
+        onchange={(e) => app.setFormat(e.currentTarget.value as "original" | "mp3")}
+      >
+        <option value="original">Original</option>
+        <option value="mp3">MP3</option>
+      </select>
+    </label>
     <button class="ghost icon" aria-label="Settings" title="Settings" disabled={app.syncing} onclick={() => (settingsOpen = true)}>
       <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2" /><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" /></svg>
     </button>

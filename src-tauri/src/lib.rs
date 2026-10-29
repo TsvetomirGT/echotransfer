@@ -200,6 +200,13 @@ fn save_settings(state: State<'_, AppState>, settings: Settings) -> Result<Setti
     Ok(new)
 }
 
+/// Whether the updater can replace this install. Linux .deb/.rpm installs can't;
+/// only the AppImage (which sets $APPIMAGE) can.
+#[tauri::command]
+fn can_self_update() -> bool {
+    !cfg!(target_os = "linux") || std::env::var_os("APPIMAGE").is_some()
+}
+
 #[tauri::command]
 fn list_volumes() -> Vec<Volume> {
     volumes::list()
@@ -395,6 +402,8 @@ fn watch_volumes(app: AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(AppState {
             settings: Mutex::new(Settings::load().sanitized()),
             ..Default::default()
@@ -409,6 +418,7 @@ pub fn run() {
             disconnect,
             get_settings,
             save_settings,
+            can_self_update,
             list_volumes,
             load_library,
             card_info,

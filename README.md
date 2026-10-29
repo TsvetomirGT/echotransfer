@@ -10,6 +10,7 @@ Pick the artists and albums you want on the player, see exactly what will change
 - **Covers that the Echo can show:** the Echo ignores `cover.jpg` files in folders. EchoTransfer embeds the album cover into each track as a small, standard JPEG that the player can display.
 - **Safe:** EchoTransfer only deletes files it put on the card itself. Your own files on the card are never touched.
 - **Optional MP3 conversion** to fit more music on a small card.
+- **One-click updates:** the app tells you when a new version is out and installs it for you.
 - Works on **macOS, Windows and Linux**.
 
 ## Contents
@@ -18,6 +19,7 @@ Pick the artists and albums you want on the player, see exactly what will change
 - [What you need](#what-you-need)
 - [How to use it](#how-to-use-it)
 - [Settings](#settings)
+- [Updates](#updates)
 - [How syncing works](#how-syncing-works)
 - [Troubleshooting](#troubleshooting)
 - [Building from source](#building-from-source)
@@ -96,6 +98,8 @@ To remember your password between launches, Linux needs a keyring service such a
 
 5. **Press Sync.** Progress, speed and time left are shown at the bottom. You can cancel at any time. Tracks that were already copied stay on the card, and the next sync continues from where it stopped.
 
+   Want to save space? Switch the **format** menu at the top from **Original** to **MP3**. Every track will be converted to MP3 by your Navidrome server on the next sync. The quality is set in Settings.
+
 6. **Eject the card** from your system before you take it out, then put it back in your Echo.
 
 The next time you insert the same card, your selection is loaded from the card. Press **Sync** to bring it up to date with the server.
@@ -108,11 +112,12 @@ Open **Settings** with the gear button at the top right.
 
 | Setting | What it does |
 | --- | --- |
-| **Audio format on card** | **Original files** copies tracks exactly as they are on the server (FLAC, MP3, WAV…). **MP3 320 / 256 / 192 kbps** asks Navidrome to convert each track, which saves a lot of space with FLAC libraries. This needs ffmpeg on the server. Changing it copies every track again. |
+| **MP3 quality** | Bitrate used when the format menu at the top is set to **MP3**: 320, 256 or 192 kbps. Navidrome converts each track, which saves a lot of space with FLAC libraries. This needs ffmpeg on the server. With **Original**, tracks are copied exactly as they are on the server (FLAC, MP3, WAV…). Changing the format or quality copies every track again. |
 | **Embedded cover size** | The size of the cover image put into each track. **500 px** works well on the Echo. Try **300 px** if covers don't appear on your player. |
 | **Parallel downloads** | How many tracks are downloaded at the same time (default 4). Raise it on a fast connection. Lower it if your server struggles. |
 | **Folder layout** | Where tracks go on the card. See below. |
 | **Delete macOS "._" files after syncing** | macOS sometimes leaves hidden `._` files on memory cards, which the player can list as broken tracks. Leave this on. |
+| **Check for updates** | Shows your version and checks GitHub for a newer one. |
 | **Sign out** | Disconnects and removes the saved password. |
 
 ### Folder layout
@@ -137,6 +142,13 @@ Music/Pink Floyd/1979 - The Wall/2-01 Hey You.flac      (multi-disc album)
 - Characters that memory cards don't allow (`< > : " / \ | ? *`) are replaced with `_`.
 
 The settings window shows a live preview. If you change the layout later, existing files on the card are moved to their new place on the next sync. Nothing is downloaded again.
+
+## Updates
+
+EchoTransfer checks for a new version each time it starts. When one is out, a banner appears at the top: click **Update**, and the app downloads the new version, installs it and restarts. You can also check by hand in **Settings → Check for updates**. Updating is not possible while a sync is running.
+
+- **Linux:** only the AppImage can update itself. With the `.deb` or `.rpm`, the button opens the download page instead.
+- **Version 0.1.x** has no updater. Install 0.2.0 or newer by hand once; later updates are automatic.
 
 ## How syncing works
 
@@ -171,7 +183,7 @@ Make sure the card is mounted: it should appear in Finder, File Explorer or your
 - In Settings, set **Embedded cover size** to **300 px** and sync again. Every track gets its cover re-embedded.
 
 **"Server could not convert this track"**
-MP3 conversion needs ffmpeg on the Navidrome server. Install it there, or switch **Audio format on card** back to **Original files**. The original files already on the card are kept when conversion fails.
+MP3 conversion needs ffmpeg on the Navidrome server. Install it there, or switch the format menu at the top back to **Original**. The original files already on the card are kept when conversion fails.
 
 **The player shows strange "._" tracks**
 Turn on **Delete macOS "._" files after syncing** in Settings and sync again.
@@ -222,7 +234,8 @@ ECHO_E2E_URL=http://127.0.0.1:4533 ECHO_E2E_USER=admin ECHO_E2E_PASS=secret \
 
 ### Releasing
 
-1. Set the new version in `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `package.json`.
+1. Set the new version in `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `package.json`. The updater only offers versions higher than the installed one.
+   Add a `## x.y.z` section to `CHANGELOG.md`. It becomes the release notes.
 2. Commit, then tag and push:
    ```sh
    git tag v0.2.0
@@ -231,6 +244,22 @@ ECHO_E2E_URL=http://127.0.0.1:4533 ECHO_E2E_USER=admin ECHO_E2E_PASS=secret \
 3. The **Release** workflow runs the tests, builds installers for macOS (Apple Silicon and Intel), Windows and Linux, and attaches them to a draft release. Review the draft on GitHub and publish it.
 
 The workflow can also be started by hand from the **Actions** tab.
+
+Published releases include a `latest.json` file and signed update bundles, which the in-app updater downloads. Drafts are not offered to users until published.
+
+#### Update signing key (one-time setup)
+
+Update bundles must be signed, or the app refuses to install them. Generate a key pair once:
+
+```sh
+npm run tauri signer generate -- -w ~/.tauri/echotransfer.key
+```
+
+1. Put the contents of `~/.tauri/echotransfer.key.pub` into `plugins.updater.pubkey` in `src-tauri/tauri.conf.json`.
+2. Add two repository secrets on GitHub (**Settings → Secrets and variables → Actions**): `TAURI_SIGNING_PRIVATE_KEY` with the contents of `~/.tauri/echotransfer.key`, and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` with its password.
+3. Keep a backup of the private key. If it is lost, installed copies can no longer be updated automatically.
+
+To build installers locally, export the same two variables before `npm run tauri build`.
 
 ## License
 

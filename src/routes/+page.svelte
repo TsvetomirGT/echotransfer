@@ -5,11 +5,14 @@
   import { app } from "$lib/state.svelte";
   import ConnectView from "$lib/components/ConnectView.svelte";
   import MainView from "$lib/components/MainView.svelte";
+  import UpdateBanner from "$lib/components/UpdateBanner.svelte";
+  import { updater } from "$lib/updater.svelte";
 
   let booting = $state(true);
 
   onMount(() => {
     const unlisten = api.onVolumes((v) => app.setVolumes(v));
+    void updater.check(true);
     (async () => {
       app.settings = await api.getSettings();
       app.setVolumes(await api.listVolumes());
@@ -32,6 +35,8 @@
 {:else}
   <ConnectView />
 {/if}
+
+<UpdateBanner />
 
 <style>
   .boot { height: 100vh; }

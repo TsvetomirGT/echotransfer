@@ -1,4 +1,4 @@
-import { api, type ArtistView, type DiffResponse, type ServerInfo, type Settings, type Volume } from "./api";
+import { api, type ArtistView, type DiffResponse, type Profile, type ServerInfo, type Settings, type Volume } from "./api";
 
 class AppState {
   server = $state<ServerInfo | null>(null);
@@ -81,6 +81,14 @@ class AppState {
     } finally {
       if (seq === this.diffSeq) this.diffLoading = false;
     }
+  }
+
+  /** Toolbar format switch: original files or MP3 at the bitrate from settings. */
+  async setFormat(format: "original" | "mp3") {
+    if (!this.settings) return;
+    const profile: Profile = format === "original" ? "original" : (`mp3-${this.settings.mp3Bitrate}` as Profile);
+    this.settings = await api.saveSettings({ ...this.settings, profile });
+    this.scheduleDiff(0);
   }
 
   async loadLibrary(refresh = false) {

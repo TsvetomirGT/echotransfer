@@ -15,6 +15,7 @@ export interface Settings {
   serverUrl: string;
   username: string;
   profile: Profile;
+  mp3Bitrate: number;
   coverSize: number;
   concurrency: number;
   pathTemplate: string;
@@ -125,6 +126,7 @@ export const api = {
   disconnect: () => invoke<void>("disconnect"),
   getSettings: () => invoke<Settings>("get_settings"),
   saveSettings: (settings: Settings) => invoke<Settings>("save_settings", { settings }),
+  canSelfUpdate: () => invoke<boolean>("can_self_update"),
   listVolumes: () => invoke<Volume[]>("list_volumes"),
   loadLibrary: (refresh = false) => invoke<ArtistView[]>("load_library", { refresh }),
   cardInfo: (mount: string) => invoke<CardInfo>("card_info", { mount }),
