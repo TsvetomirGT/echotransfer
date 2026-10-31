@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+### Changed
+
+- **Add all is always available.** With no filter or search it adds the whole library; with one it adds only the matching albums, as before.
+
 ## 0.3.0
 
 ### New

@@ -1,6 +1,6 @@
 {
   "name": "echotransfer",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Sync Navidrome music to a Snowsky Echo SD card",
   "type": "module",
   "scripts": {

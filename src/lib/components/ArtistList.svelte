@@ -19,7 +19,6 @@
     return albums.filter((al) => app.selection.has(al.id)).length;
   }
 
-  const narrowed = $derived(app.filter !== "all" || app.query.trim() !== "");
   const allMatchingSelected = $derived(app.matching.length > 0 && selCount(app.matching) === app.matching.length);
   const matchingBytes = $derived(app.matching.reduce((n, al) => n + al.size, 0));
 
@@ -49,7 +48,7 @@
       </button>
     {/each}
   </div>
-  {#if narrowed && app.matching.length > 0}
+  {#if app.matching.length > 0}
     <div class="bulk">
       <span class="num">{app.matching.length} {app.matching.length === 1 ? "album" : "albums"}, {formatBytes(matchingBytes)}</span>
       <button class="secondary" onclick={() => toggle(app.matching)}>
