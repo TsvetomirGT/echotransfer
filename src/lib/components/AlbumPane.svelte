@@ -9,7 +9,8 @@
 
   const label: Record<Status, string> = { new: "New", updated: "Updated", removed: "Remove", synced: "On card" };
 
-  const allSelected = $derived(!!artist && artist.albums.every((a) => app.selection.has(a.id)));
+  const albums = $derived(artist ? app.visibleAlbums(artist) : []);
+  const allSelected = $derived(albums.length > 0 && albums.every((a) => app.selection.has(a.id)));
 
   async function expand(id: string) {
     if (open === id) {
@@ -38,12 +39,14 @@
 {:else}
   <div class="head">
     <h2>{artist.name}</h2>
-    <button class="secondary" onclick={() => app.toggleAlbums(artist.albums.map((a) => a.id), !allSelected)}>
-      {allSelected ? "Remove all from card" : "Add all to card"}
-    </button>
+    {#if albums.length > 0}
+      <button class="secondary" onclick={() => app.toggleAlbums(albums.map((a) => a.id), !allSelected)}>
+        {allSelected ? "Remove all from card" : "Add all to card"}
+      </button>
+    {/if}
   </div>
   <ul>
-    {#each artist.albums as al (al.id)}
+    {#each albums as al (al.id)}
       {@const d = app.diff?.albums[al.id]}
       {@const cover = app.coverUrl(al.coverArt, 120)}
       <li class:open={open === al.id}>
@@ -84,6 +87,8 @@
           </ol>
         {/if}
       </li>
+    {:else}
+      <li class="none">No albums by {artist.name} match the current filter.</li>
     {/each}
   </ul>
 {/if}
@@ -96,6 +101,7 @@
   }
   h2 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   ul { list-style: none; margin: 0; padding: 0 16px 24px; }
+  .none { color: var(--muted); padding: 8px; }
   li.open { background: var(--hover); border-radius: var(--radius); }
   .row { display: flex; align-items: center; gap: 8px; padding-left: 8px; border-radius: var(--radius); }
   .row:hover { background: var(--hover); }

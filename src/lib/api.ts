@@ -41,6 +41,8 @@ export interface AlbumView {
   songCount: number;
   size: number;
   duration: number;
+  /** ISO 8601 time the album was added to the server. */
+  created: string | null;
 }
 
 export interface ArtistView {

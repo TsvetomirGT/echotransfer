@@ -83,7 +83,8 @@ To remember your password between launches, Linux needs a keyring service such a
 3. **Choose your music.**
    - Tick an artist in the left column to add all of their albums, or click the artist's name and tick single albums on the right.
    - Use the search box to find artists or albums.
-   - Switch the list to **On card** to see only what you've selected.
+   - Use the filters below the search box to narrow the list: **Not on card**, **Recently added** (last 30 days), **Updated** or **On card**.
+   - While a filter or search is active, **Add all** adds every matching album to the card at once (or **Remove all** if they're all on it).
 
 4. **Check what will change.** Each album gets a label:
 

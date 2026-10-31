@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+### New
+
+- **Album filters.** Below the search box, pick **All**, **Not on card**, **Recently added** (added to the server in the last 30 days), **Updated** or **On card**. Each shows how many albums it matches. Filters and search now apply to albums as well as artists, so the album list only shows albums that match.
+- **Add all / Remove all.** When a filter or search is active, one button adds every matching album to the card, or removes them all, with the total size shown next to it.
+
 ## 0.2.1
 
 ### New

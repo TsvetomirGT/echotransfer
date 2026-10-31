@@ -33,6 +33,7 @@ pub struct AlbumView {
     pub song_count: usize,
     pub size: u64,
     pub duration: u64,
+    pub created: Option<String>,
 }
 
 impl Library {
@@ -92,6 +93,7 @@ impl Library {
                     song_count: songs.len(),
                     size: songs.iter().map(|s| s.size).sum(),
                     duration: songs.iter().map(|s| s.duration).sum(),
+                    created: a.created.clone(),
                 });
         }
         let mut out: Vec<ArtistView> = by_artist
@@ -131,5 +133,13 @@ mod tests {
         let artists = lib.artists();
         assert_eq!(artists.len(), 1);
         assert_eq!(artists[0].albums.len(), 2);
+    }
+
+    #[test]
+    fn album_view_carries_created() {
+        let album = Album { id: "a1".into(), created: Some("2026-10-01T12:00:00Z".into()), ..Default::default() };
+        let song = Song { id: "s1".into(), album_id: Some("a1".into()), ..Default::default() };
+        let lib = Library::from_parts(vec![album], vec![song]);
+        assert_eq!(lib.artists()[0].albums[0].created.as_deref(), Some("2026-10-01T12:00:00Z"));
     }
 }

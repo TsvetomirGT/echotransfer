@@ -1,11 +1,8 @@
 <script lang="ts">
-  import type { ArtistView, Status } from "$lib/api";
-  import { app } from "$lib/state.svelte";
+  import { formatBytes, type AlbumView, type ArtistView, type Status } from "$lib/api";
+  import { app, FILTERS } from "$lib/state.svelte";
 
   let { focused = $bindable<string | null>(null) } = $props();
-
-  let query = $state("");
-  let onlySelected = $state(false);
 
   const rank: Record<Status, number> = { removed: 3, updated: 2, new: 1, synced: 0 };
 
@@ -18,71 +15,86 @@
     return best;
   }
 
-  function selCount(a: ArtistView) {
-    return a.albums.filter((al) => app.selection.has(al.id)).length;
+  function selCount(albums: AlbumView[]) {
+    return albums.filter((al) => app.selection.has(al.id)).length;
   }
 
-  const visible = $derived.by(() => {
-    const q = query.trim().toLowerCase();
-    return app.artists.filter(
-      (a) =>
-        (!q || a.name.toLowerCase().includes(q) || a.albums.some((al) => al.name.toLowerCase().includes(q))) &&
-        (!onlySelected || selCount(a) > 0),
-    );
-  });
+  const narrowed = $derived(app.filter !== "all" || app.query.trim() !== "");
+  const allMatchingSelected = $derived(app.matching.length > 0 && selCount(app.matching) === app.matching.length);
+  const matchingBytes = $derived(app.matching.reduce((n, al) => n + al.size, 0));
+
+  const emptyText: Record<string, string> = {
+    missing: "Every album is on this card",
+    recent: "Nothing added in the last 30 days",
+    updated: "Nothing on the card has changed",
+    onCard: "Nothing selected for this card yet",
+  };
 
   function indeterminate(node: HTMLInputElement, value: boolean) {
     node.indeterminate = value;
     return { update: (v: boolean) => (node.indeterminate = v) };
   }
 
-  function toggle(a: ArtistView) {
-    const all = selCount(a) === a.albums.length;
-    app.toggleAlbums(a.albums.map((al) => al.id), !all);
+  function toggle(albums: AlbumView[]) {
+    app.toggleAlbums(albums.map((al) => al.id), selCount(albums) !== albums.length);
   }
 </script>
 
 <div class="top">
-  <input class="field" type="search" placeholder="Search artists and albums" bind:value={query} spellcheck="false" />
-  <div class="filters" role="tablist">
-    <button role="tab" aria-selected={!onlySelected} class:on={!onlySelected} onclick={() => (onlySelected = false)}>All</button>
-    <button role="tab" aria-selected={onlySelected} class:on={onlySelected} onclick={() => (onlySelected = true)}>
-      On card <span class="num">{app.selection.size}</span>
-    </button>
+  <input class="field" type="search" placeholder="Search artists and albums" bind:value={app.query} spellcheck="false" />
+  <div class="filters" role="radiogroup" aria-label="Show albums">
+    {#each FILTERS as f (f.id)}
+      <button role="radio" aria-checked={app.filter === f.id} class:on={app.filter === f.id} title={f.title} onclick={() => (app.filter = f.id)}>
+        {f.label} <span class="num">{app.filterCounts[f.id]}</span>
+      </button>
+    {/each}
   </div>
+  {#if narrowed && app.matching.length > 0}
+    <div class="bulk">
+      <span class="num">{app.matching.length} {app.matching.length === 1 ? "album" : "albums"}, {formatBytes(matchingBytes)}</span>
+      <button class="secondary" onclick={() => toggle(app.matching)}>
+        {allMatchingSelected ? "Remove all" : "Add all"}
+      </button>
+    </div>
+  {/if}
 </div>
 
 <ul>
-  {#each visible as a (a.id)}
-    {@const n = selCount(a)}
+  {#each app.visible as { artist: a, albums } (a.id)}
+    {@const n = selCount(albums)}
     {@const st = artistStatus(a)}
     <li class:focused={focused === a.id}>
       <input
         type="checkbox"
         aria-label={`Sync ${a.name}`}
-        checked={n === a.albums.length}
-        use:indeterminate={n > 0 && n < a.albums.length}
-        onchange={() => toggle(a)}
+        checked={n === albums.length}
+        use:indeterminate={n > 0 && n < albums.length}
+        onchange={() => toggle(albums)}
       />
       <button class="name" onclick={() => (focused = a.id)}>
         <span class="label">{a.name}</span>
         {#if st && st !== "synced"}<span class="dot {st}" title={st}></span>{/if}
-        <span class="count num">{a.albums.length}</span>
+        <span class="count num">{albums.length}</span>
       </button>
     </li>
   {:else}
-    <li class="empty">{app.libraryLoading ? "Loading library…" : query ? "No matches" : onlySelected ? "Nothing selected for this card yet" : "No music found"}</li>
+    <li class="empty">
+      {app.libraryLoading ? "Loading library…" : app.query.trim() ? "No matches" : (emptyText[app.filter] ?? "No music found")}
+    </li>
   {/each}
 </ul>
 
 <style>
   .top { padding: 0 12px 10px; display: flex; flex-direction: column; gap: 8px; }
-  .filters { display: flex; gap: 2px; background: var(--active); border-radius: 6px; padding: 2px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 4px; }
   .filters button {
-    flex: 1; border: 0; background: transparent; border-radius: 4px; height: 22px; color: var(--muted); font-size: 12px;
+    border: 0; background: var(--active); border-radius: 11px; height: 22px; padding: 0 8px; color: var(--muted); font-size: 12px;
   }
-  .filters button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+  .filters button:hover { color: var(--ink); }
+  .filters button.on { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.08); }
   .filters .num { color: var(--faint); margin-left: 2px; }
+  .bulk { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+  .bulk button { height: 24px; padding: 0 10px; font-size: 12px; }
   ul { list-style: none; margin: 0; padding: 0 6px 12px; overflow-y: auto; flex: 1; }
   li { display: flex; align-items: center; gap: 4px; padding-left: 6px; border-radius: var(--radius-sm); }
   li:hover { background: var(--hover); }

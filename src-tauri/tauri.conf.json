@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "EchoTransfer",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "identifier": "com.tsvetomirgt.echotransfer",
   "build": {
     "beforeDevCommand": "npm run dev",

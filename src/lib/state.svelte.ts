@@ -1,4 +1,16 @@
-import { api, type ArtistView, type DiffResponse, type Profile, type ServerInfo, type Settings, type Volume } from "./api";
+import { api, type AlbumView, type ArtistView, type DiffResponse, type Profile, type ServerInfo, type Settings, type Volume } from "./api";
+
+export type AlbumFilter = "all" | "missing" | "recent" | "updated" | "onCard";
+
+export const FILTERS: { id: AlbumFilter; label: string; title: string }[] = [
+  { id: "all", label: "All", title: "Every album on the server" },
+  { id: "missing", label: "Not on card", title: "Albums not selected for this card" },
+  { id: "recent", label: "Recently added", title: "Added to the server in the last 30 days" },
+  { id: "updated", label: "Updated", title: "On the card, but changed on the server" },
+  { id: "onCard", label: "On card", title: "Albums selected for this card" },
+];
+
+const RECENT_MS = 30 * 24 * 60 * 60 * 1000;
 
 class AppState {
   server = $state<ServerInfo | null>(null);
@@ -14,6 +26,56 @@ class AppState {
   diffLoading = $state(false);
   cardNotice = $state<string | null>(null);
   syncing = $state(false);
+  query = $state("");
+  filter = $state<AlbumFilter>("all");
+
+  /** Artists with at least one album passing the query and filter, with those albums. */
+  visible = $derived.by(() =>
+    this.artists
+      .map((artist) => ({ artist, albums: this.queried(artist).filter((al) => this.passes(al, this.filter)) }))
+      .filter((v) => v.albums.length > 0),
+  );
+
+  /** Every album the sidebar currently shows, for "add all". */
+  matching = $derived(this.visible.flatMap((v) => v.albums));
+
+  /** Album count per filter under the current query. */
+  filterCounts = $derived.by(() => {
+    const counts = Object.fromEntries(FILTERS.map((f) => [f.id, 0])) as Record<AlbumFilter, number>;
+    for (const a of this.artists) {
+      for (const al of this.queried(a)) {
+        for (const f of FILTERS) if (this.passes(al, f.id)) counts[f.id]++;
+      }
+    }
+    return counts;
+  });
+
+  /** Albums of `a` matching the search; an artist-name match keeps all of them. */
+  private queried(a: ArtistView): AlbumView[] {
+    const q = this.query.trim().toLowerCase();
+    if (!q || a.name.toLowerCase().includes(q)) return a.albums;
+    return a.albums.filter((al) => al.name.toLowerCase().includes(q));
+  }
+
+  private passes(al: AlbumView, f: AlbumFilter): boolean {
+    switch (f) {
+      case "all":
+        return true;
+      case "missing":
+        return !this.selection.has(al.id);
+      case "onCard":
+        return this.selection.has(al.id);
+      case "updated":
+        return this.diff?.albums[al.id]?.status === "updated";
+      case "recent":
+        return !!al.created && Date.now() - Date.parse(al.created) < RECENT_MS;
+    }
+  }
+
+  /** Albums of `a` the sidebar shows, for the album pane. */
+  visibleAlbums(a: ArtistView): AlbumView[] {
+    return this.visible.find((v) => v.artist.id === a.id)?.albums ?? [];
+  }
 
   get volume(): Volume | null {
     return this.volumes.find((v) => v.mountPoint === this.mount) ?? null;

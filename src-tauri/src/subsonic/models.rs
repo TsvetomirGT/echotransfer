@@ -86,6 +86,9 @@ pub struct Album {
     pub year: Option<u32>,
     #[serde(default)]
     pub genre: Option<String>,
+    /// ISO 8601 time the album was added to the server.
+    #[serde(default)]
+    pub created: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
